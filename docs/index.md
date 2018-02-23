@@ -1,27 +1,18 @@
 ### Available models: 
 
-- Graves2006:
-> see the reference at:[Graves' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- **Graves2006:** see the reference at:[Graves' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
 
-- eyben:
+- **eyben:** see the reference at:[Eybens' model](http://ieeexplore.ieee.org/abstract/document/5373257/)
 
-> see the reference at:[Eybens' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
-
-- maas:
-
-> see the reference at:[Maas' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- **maas:** see the reference at:[Maas' model](http://www.aclweb.org/anthology/N15-1038)
 
 
-- deep_speech:
-
-> see the reference at:[Deep Speech model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- **deep_speech:** see the reference at:[Deep Speech model](https://arxiv.org/abs/1412.5567)
 
 
-- deep_speech2
-> see the reference at:[Deep Speech2 model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- **deep_speech2:** see the reference at:[Deep Speech2 model](https://arxiv.org/abs/1512.02595)
 
-- brsmv1
-> BRSM v1.0 model
+- **brsmv1:** BRSM v1.0 model
 
 
 ## Example of training for all available models:
@@ -60,6 +51,7 @@ For English Speech Dataset (ENSD):
 python train.py --dataset .datasets/ensd/data.h5 --model graves2006
 
 ```
+
 
 
 
