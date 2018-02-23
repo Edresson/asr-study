@@ -1,27 +1,27 @@
 ### Available models: 
 
-#### Graves2006:
-see the reference at:[Graves' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- Graves2006:
+> see the reference at:[Graves' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
 
-#### eyben:
+- eyben:
 
-see the reference at:[Eybens' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+> see the reference at:[Eybens' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
 
-#### maas:
+- maas:
 
-see the reference at:[Maas' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
-
-
-#### deep_speech:
-
-see the reference at:[Deep Speech model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+> see the reference at:[Maas' model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
 
 
-#### deep_speech2
-see the reference at:[Deep Speech2 model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+- deep_speech:
 
-#### brsmv1
-BRSM v1.0 model
+> see the reference at:[Deep Speech model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+
+
+- deep_speech2
+> see the reference at:[Deep Speech2 model](ftp://ftp.idsia.ch/pub/juergen/icml2006.pdf)
+
+- brsmv1
+> BRSM v1.0 model
 
 
 ## Example of training for all available models:
