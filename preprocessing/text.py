@@ -105,8 +105,8 @@ class CharParser(BaseParser):
         if not('p' in self.mode):
             try:
                 text = text.translate(
-                    string.maketrans("-'", '  ')).translate(None,
-                                                        string.punctuation)
+                    str.maketrans("-'", '  ')).translate(None,string.punctuation)
+               
             except:
                 
                 trantab = str.maketrans("-'",'  ')

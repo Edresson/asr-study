@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser = utils.get_from_module('datasets*',
                                    args.parser,
                                    regex=True)
-
+    print('input args ',args.input_parser_params)
     input_parser = utils.get_from_module('preprocessing.audio',
                                          args.input_parser,
                                          params=args.input_parser_params)

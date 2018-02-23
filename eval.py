@@ -9,6 +9,7 @@ import numpy as np
 # Preventing pool_allocator message
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+
 import argparse
 import h5py
 import inspect

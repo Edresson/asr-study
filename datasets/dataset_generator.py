@@ -234,6 +234,8 @@ class DatasetIterator(Iterator):
         batch_inputs_len = np.asarray([i.shape[0] for i in inputs])
         return batch_inputs, batch_inputs_len
 
+        
+
     def _make_out(self, labels, batch_size=None):
         if self.labels is None or self.mode == 'predict':
             return None

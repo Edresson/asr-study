@@ -76,7 +76,7 @@ if __name__ == "__main__":
                                             )
 
         data_it = DatasetIterator(np.array([f for a, f in audios]),
-                                  label_parser=input_parser,
+                                  input_parser=input_parser,
                                   label_parser=label_parser)
 
         model_predictions = model.predict_generator(

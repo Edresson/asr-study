@@ -7,7 +7,6 @@ from datasets import LapsBM
 
 from utils.generic_utils import get_from_module
 
-
 class BRSD(DatasetParser):
     """ Brazilian Portuguese Speech dataset reader and parser
 
@@ -65,19 +64,20 @@ class BRSD(DatasetParser):
 
             if name == 'lapsbm':
                 continue
-
+            
             try:
-                dataset_cls = get_from_module('datasets*', name, regex=True)
-                dataset = dataset_cls(dataset_dir=path)
+                    dataset_cls = get_from_module('datasets*', name, regex=True)
+                    dataset = dataset_cls(dataset_dir=path)
 
-                for d in dataset._iter():
-                    yield {'duration': d['duration'],
-                           'input': d['input'],
-                           'label': d['label'],
-                           'speaker': '%s_%s' % (str(dataset), d['speaker']),
-                           'dataset': 'train'}
-            except ValueError as  e:
-                self._logger.warning('Skipping dataset %s: %s' % (name, e))
+                    for d in dataset._iter():
+                        yield {'duration': d['duration'],
+                               'input': d['input'],
+                               'label': d['label'],
+                               'speaker': '%s_%s' % (str(dataset), d['speaker']),
+                               'dataset': 'train'}
+            except ValueError as e:
+                    self._logger.warning('Skipping dataset %s: %s' % (name, e))
+            
         # Test and valid set
         lapsbm = LapsBM(dataset_dir=self.dataset_dir['lapsbm'], split=True)
         for d in lapsbm._iter():

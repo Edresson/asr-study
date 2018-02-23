@@ -54,7 +54,13 @@ def get_from_module(module, name, params=None, regex=False):
         member = members[name.lower().strip()]
         # is a class and must be instantiate if params is not none
         if (member and params is not None) and inspect.isclass(member):
-            return member(**HParams().parse(params).values())
+            #print(params , **HParams().parse(params).values())
+            #print(member,name.lower().strip(),**HParams().parse(params).values())
+            try:
+                return member(**HParams().parse(params).values())
+            except:
+                return member(**HParams().parse(params))
+                
 
         return member
     except KeyError as e:
@@ -70,6 +76,8 @@ def inspect_module(module, to_dict=True, regex=False):
             if pattern.match(key):
                 modules[key] = value
     else:
+        a = open("modules.txt",'w')
+        print ('\n'.join(sys.modules.keys()),file=a)
         modules = {module: sys.modules[module]}
 
     members = []

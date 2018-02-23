@@ -10,22 +10,23 @@ from utils.generic_utils import get_from_module
 class ENSD(DatasetParser):
     """ English Speech dataset reader and parser
 
-    This dataset is a combination of four biggers datasets (voxforge, CommonVoice). The dataset was divided in the following
+    This dataset is a combination of four biggers datasets (voxforge, CommonVoice, LibriSpeech). The dataset was divided in the following
     way:
-        * Train: voxforge,CommonVoice
+        * Train: voxforge,CommonVoice,LibriSpeech
         * Valid: Common Voice valid test( cv-valid-test )
-        * Test: Common Voice valid test( cv-other-test.csv )
-
-    After cleaning (removing label with zero length, label with numeric
-    digits, e.g., 4 instead of four) the training set contains 11702
-    utterances with 425 speakers.
+        * Test: Common Voice valid test( cv-other-test )
 
     """
 
     def __init__(self, dataset_dir=None, name='ensd', **kwargs):
 
         dataset_dir = dataset_dir or {'cv_corpus_v1': None,
-                                      'voxforge': None}
+                                      'LibriSpeech': None,
+                                      'voxforge_en': None,
+                                      'vctk': None,
+                                      'tedlium2': None,
+                                      'tatoeba': None
+                                      }
 
         super(ENSD, self).__init__(dataset_dir, name, **kwargs)
 
@@ -45,12 +46,10 @@ class ENSD(DatasetParser):
         if not isinstance(value, dict):
             raise ValueError("dataset_dir must be a dictionary")
 
-        for key in ('cv_corpus_v1', 'voxforge'):
+        for key in ('cv_corpus_v1', 'voxforge_en','LibriSpeech','vctk','tedlium2','tatoeba'):
             if key not in value:
                 raise KeyError("dataset_dir must have the key %s" % key)
 
-        '''if 'cslu' not in value:
-            self._logger.warning('CSLU not found. Ignoring it.')'''
 
         self._dataset_dir = value
 
@@ -64,7 +63,7 @@ class ENSD(DatasetParser):
             try:
                 dataset_cls = get_from_module('datasets*', name, regex=True)
                 dataset = dataset_cls(dataset_dir=path)
-
+                print(dataset)
                 for d in dataset._iter():
                     yield {'duration': d['duration'],
                            'input': d['input'],

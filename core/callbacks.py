@@ -58,9 +58,10 @@ class MetaCheckpoint(callbacks.ModelCheckpoint):
 
 class ProgbarLogger(callbacks.ProgbarLogger):
 
-    def __init__(self, show_metrics=None):
-        super(ProgbarLogger, self).__init__()
-
+    def __init__(self, count_mode='samples',show_metrics=None):
+        
+        super(ProgbarLogger, self).__init__(count_mode='samples')
+        
         self.show_metrics = show_metrics
 
     def on_train_begin(self, logs=None):

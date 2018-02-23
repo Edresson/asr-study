@@ -3,8 +3,16 @@ from __future__ import absolute_import
 
 import keras.backend as K
 import tensorflow as tf
+from keras import activations, regularizers
 
-from keras import activations, initializations, regularizers
+#compatibility keras update
+try: 
+    from keras import initializers
+    initializations = initializers
+except:
+    from keras import initializations
+    
+
 from keras.layers import GRU, SimpleRNN
 from keras.layers import LSTM as keras_LSTM
 

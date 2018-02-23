@@ -7,25 +7,53 @@ from utils.hparams import HParams
 
 import keras
 import keras.backend as K
-from keras.initializations import uniform
+
+#compatibility keras update
+try: 
+    from keras.initializers import uniform
+except:
+    from keras.initializations import uniform
+
+
+
 from keras.activations import relu
 
-from keras.models import Model
+from keras.models import Model  as Model
 
 from keras.layers import Input
 from keras.layers import GaussianNoise
 from keras.layers import TimeDistributed
 from keras.layers import Dense
-from .layers import LSTM
 from keras.layers import Masking
 from keras.layers import Bidirectional
 from keras.layers import Lambda
 from keras.layers import Dropout
 from keras.layers import merge
 
-from keras.regularizers import l1, l2, l1l2
+import keras.layers as keras_layers
 
-from .layers import recurrent
+
+from keras.layers.recurrent import SimpleRNN
+from keras.layers import Dense, Activation, Bidirectional, Reshape,Flatten, Lambda, Input,\
+    Masking, Convolution1D, BatchNormalization, GRU, Conv1D, RepeatVector, Conv2D
+from keras.optimizers import SGD, adam
+from keras.layers import ZeroPadding1D, Convolution1D, ZeroPadding2D, Convolution2D, MaxPooling2D, GlobalMaxPooling2D
+from keras.layers import TimeDistributed, Dropout
+from keras.layers.merge import add  # , # concatenate BAD FOR COREML
+from keras.utils.conv_utils import conv_output_length
+from keras.activations import relu
+
+
+
+
+#compatibility keras update
+try:
+    from keras.regularizers import l1, l2, l1l2
+except:
+    from keras.regularizers import l1, l2
+
+from core.layers import recurrent
+from core.layers import LSTM
 
 
 def ctc_model(inputs, output, **kwargs):
@@ -49,7 +77,7 @@ def ctc_model(inputs, output, **kwargs):
     # Define loss as a layer
     loss = ctc([output, labels, inputs_length])
 
-    return Model(input=[inputs, labels, inputs_length], output=[loss, y_pred])
+    return Model(inputs=[inputs, labels, inputs_length], outputs=[loss, y_pred])
 
 
 def graves2006(num_features=26, num_hiddens=100, num_classes=28, std=.6):
@@ -65,9 +93,9 @@ def graves2006(num_features=26, num_hiddens=100, num_classes=28, std=.6):
     o = x
 
     o = GaussianNoise(std)(o)
-    o = Bidirectional(LSTM(num_hiddens,
+    o = Bidirectional(keras_layers.LSTM(num_hiddens,
                       return_sequences=True,
-                      consume_less='gpu'))(o)
+                      implementation = 2))(o)
     o = TimeDistributed(Dense(num_classes))(o)
 
     return ctc_model(x, o)
@@ -90,13 +118,13 @@ def eyben(num_features=39, num_hiddens=[78, 120, 27], num_classes=28):
     if num_hiddens[0]:
         o = TimeDistributed(Dense(num_hiddens[0]))(o)
     if num_hiddens[1]:
-        o = Bidirectional(LSTM(num_hiddens[1],
+        o = Bidirectional(keras_layers.LSTM(num_hiddens[1],
                           return_sequences=True,
-                          consume_less='gpu'))(o)
+                          implementation = 2))(o)
     if num_hiddens[2]:
-        o = Bidirectional(LSTM(num_hiddens[2],
+        o = Bidirectional(keras_layers.LSTM(num_hiddens[2],
                           return_sequences=True,
-                          consume_less='gpu'))(o)
+                          implementation = 2))(o)
 
     o = TimeDistributed(Dense(num_classes))(o)
 
@@ -110,7 +138,10 @@ def maas(num_features=81, num_classes=29, num_hiddens=1824, dropout=0.1,
         [1] Maas, Andrew L., et al. "Lexicon-Free Conversational Speech
         Recognition with Neural Networks." HLT-NAACL. 2015.
     """
-
+    #keras2 hack to get clipped_relu to work on Bidirectional layer 
+    from keras.utils.generic_utils import get_custom_objects
+    get_custom_objects().update({"clipped_relu": clipped_relu})
+    
     x = Input(name='inputs', shape=(None, num_features))
     o = x
 
@@ -180,7 +211,11 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
 
     def clipped_relu(x):
         return relu(x, max_value=max_value)
-
+    
+    #keras2 hack to get clipped_relu to work on Bidirectional layer 
+    from keras.utils.generic_utils import get_custom_objects
+    get_custom_objects().update({"clipped_relu": clipped_relu})
+    
     # First layer
     o = TimeDistributed(Dense(num_hiddens))(o)
     o = TimeDistributed(Activation(clipped_relu))(o)
@@ -212,6 +247,62 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
     o = TimeDistributed(Dense(num_classes))(o)
 
     return ctc_model(x, o)
+
+
+#ToDo: Implement in preprocessing/audio.py Spectrogram support.
+
+def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
+                  conv_layers=1, gru_layers=1, use_conv=True):
+    """ DeepSpeech 2 implementation
+    Architecture:
+        Input Spectrogram TIMEx161
+        1 Batch Normalisation layer on input
+        1-3 Convolutional Layers
+        1 Batch Normalisation layer
+        1-7 BiDirectional GRU Layers
+        1 Batch Normalisation layer
+        1 Fully connected Dense
+        1 Softmax output
+    Details:
+       - Uses Spectrogram as input rather than MFCC
+       - Did not use BN on the first input
+       - Network does not dynamically adapt to maximum audio size in the first convolutional layer. Max conv
+          length padded at 2048 chars, otherwise use_conv=False
+    Reference:
+        https://arxiv.org/abs/1512.02595
+    """
+    def clipped_relu(x):
+        return relu(x, max_value=max_value)
+    
+    K.set_learning_phase(1)
+
+    input_data = Input(shape=(None, num_features), name='the_input')
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(input_data)
+
+    if use_conv:
+        conv = ZeroPadding1D(padding=(0, 2048))(x)
+        for l in range(conv_layers):
+            x = Conv1D(filters=num_hiddens, name='conv_{}'.format(l+1), kernel_size=11, padding='valid', activation='relu', strides=2)(conv)
+    else:
+        for l in range(conv_layers):
+            x = TimeDistributed(Dense(num_hiddens, name='fc_{}'.format(l + 1), activation='relu'))(x)  
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    for l in range(gru_layers):
+        x = Bidirectional(GRU(rnn_size, name='fc_{}'.format(l + 1), return_sequences=True, activation='relu', kernel_initializer=initialization),
+                      merge_mode='sum')(x)
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    # Last Layer 5+6 Time Dist Dense Layer & Softmax
+    x = TimeDistributed(Dense(num_hiddens, activation=clipped_relu))(x)
+    x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
+
+    return ctc_model(input_data, x)
+
+
+
 
 
 def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
@@ -252,7 +343,7 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
 
     if residual is not None:
         o = TimeDistributed(Dense(num_hiddens*2,
-                                  W_regularizer=l2(weight_decay)))(o)
+                                  kernel_regularizer=l2(weight_decay)))(o)
 
     if input_dropout:
         o = Dropout(dropout)(o)
@@ -260,15 +351,16 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
     for i, _ in enumerate(range(num_layers)):
         new_o = Bidirectional(LSTM(num_hiddens,
                                    return_sequences=True,
-                                   W_regularizer=l2(weight_decay),
-                                   U_regularizer=l2(weight_decay),
-                                   dropout_W=dropout,
-                                   dropout_U=dropout,
+                                   kernel_regularizer=l2(weight_decay),
+                                   recurrent_regularizer=l2(weight_decay),
+                                   dropout=dropout,
+                                   recurrent_dropout=dropout,
                                    zoneout_c=zoneout,
                                    zoneout_h=zoneout,
                                    mi=mi,
                                    layer_norm=layer_norm,
                                    activation=activation))(o)
+
 
         if residual is not None:
             o = merge([new_o,  o], mode=residual)
@@ -276,6 +368,6 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
             o = new_o
 
     o = TimeDistributed(Dense(num_classes,
-                              W_regularizer=l2(weight_decay)))(o)
+                              kernel_regularizer=l2(weight_decay)))(o)
 
     return ctc_model(x, o)

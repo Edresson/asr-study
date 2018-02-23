@@ -92,9 +92,9 @@ if __name__ == '__main__':
     logger = logging.getLogger(__name__)
     tf.logging.set_verbosity(tf.logging.ERROR)
 
-    # hack in ProgbarLogger: avoid logger.infoing the dummy losses
-    keras.callbacks.ProgbarLogger = lambda: ProgbarLogger(
-        show_metrics=['loss', 'decoder_ler', 'val_loss', 'val_decoder_ler'])
+    '''# hack in ProgbarLogger: avoid logger.infoing the dummy losses
+    keras.callbacks.ProgbarLogger = lambda  : ProgbarLogger(count_mode='steps',
+        show_metrics=['loss', 'decoder_ler', 'val_loss', 'val_decoder_ler'])'''
 
     # GPU configuration
     setup_gpu(args.gpu, args.allow_growth,
@@ -176,13 +176,13 @@ if __name__ == '__main__':
     input_parser = utils.get_from_module('preprocessing.audio',
                                          args.input_parser,
                                          params=args.input_parser_params)
-
+    print(input_parser)
     logger.info('Getting the text parser...')
     # Recovering text parser
     label_parser = utils.get_from_module('preprocessing.text',
                                          args.label_parser,
                                          params=args.label_parser_params)
-
+    print(type(label_parser))
     logger.info('Getting the data generator...')
     # Data generator
     data_gen = DatasetGenerator(input_parser, label_parser,
@@ -193,8 +193,10 @@ if __name__ == '__main__':
     num_val_samples = num_test_samples = 0
 
     logger.info('Generating flow...')
-    
     if len(args.dataset) == 1:
+
+
+
         train_flow, valid_flow, test_flow = data_gen.flow_from_fname(
             args.dataset[0], datasets=['train', 'valid', 'test'])
         num_val_samples = valid_flow.len
@@ -210,13 +212,24 @@ if __name__ == '__main__':
     logger.info(str(vars(args)))
     print(str(vars(args)))
     logger.info('Initialzing training...')
-    # Fit the model
-    model.fit_generator(train_flow, samples_per_epoch=train_flow.len,
-                        nb_epoch=args.num_epochs, validation_data=valid_flow,
-                        nb_val_samples=num_val_samples, max_q_size=10,
-                        nb_worker=1, callbacks=callback_list, verbose=1,
-                        initial_epoch=epoch_offset)
 
+
+    #NOTE:  As per the keras 2 documentation the parameter steps_per_epoch = no of train samples/batch_size and validation_steps = no of validation samples/batch_size
+    steps_per_epoch = train_flow.len#/args.batch_size
+    validation_steps = num_val_samples#/args.batch_size
+    
+
+        
+    #print('train_flow ',train_flow[0].next())
+    # Fit the model
+    #print(next(valid_flow))
+    
+    model.fit_generator(train_flow, steps_per_epoch=steps_per_epoch,
+                        epochs=args.num_epochs, validation_data=valid_flow,
+                        validation_steps=validation_steps, max_queue_size=10,
+                        workers=1, callbacks=callback_list, verbose=1,
+                        initial_epoch=epoch_offset)
+    
     if test_flow:
         del model
         model = load_model(os.path.join(output_dir, 'best.h5'), mode='eval')

@@ -106,6 +106,23 @@ def custom_model(num_features=26, num_hiddens=100, num_classes=28):
 
     return ctc_model(x, o)
 ```
+
+
+#### Train other Available models
+## Graves 2006
+its necessary preprocess it into an hdf5 file, using the  params:
+```
+python -m extras.make_dataset --parser brsd  --input_parser mfcc --input_parser_params "num_cep 26 dd 0 d 0" --override
+
+```
+train using this command:
+```    
+python train.py --dataset .datasets/brsd/data.h5 --model graves2006
+
+```
+
+
+
 ## Contributing
 There are a plenty of work to be done. All contributions are welcome :).
 
