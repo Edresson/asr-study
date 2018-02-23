@@ -249,59 +249,6 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
     return ctc_model(x, o)
 
 
-#ToDo: Implement in preprocessing/audio.py Spectrogram support.
-
-def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
-                  conv_layers=1, gru_layers=1, use_conv=True):
-    """ DeepSpeech 2 model.
-    Architecture:
-        Input Spectrogram TIMEx161
-        1 Batch Normalisation layer on input
-        1-3 Convolutional Layers
-        1 Batch Normalisation layer
-        1-7 BiDirectional GRU Layers
-        1 Batch Normalisation layer
-        1 Fully connected Dense
-        1 Softmax output
-    Details:
-       - Uses Spectrogram as input rather than MFCC
-       - Did not use BN on the first input
-       - Network does not dynamically adapt to maximum audio size in the first convolutional layer. Max conv
-          length padded at 2048 chars, otherwise use_conv=False
-    Reference:
-        https://arxiv.org/abs/1512.02595
-    """
-    def clipped_relu(x):
-        return relu(x, max_value=max_value)
-    
-    K.set_learning_phase(1)
-
-    input_data = Input(shape=(None, num_features), name='the_input')
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(input_data)
-
-    if use_conv:
-        conv = ZeroPadding1D(padding=(0, 2048))(x)
-        for l in range(conv_layers):
-            x = Conv1D(filters=num_hiddens, name='conv_{}'.format(l+1), kernel_size=11, padding='valid', activation='relu', strides=2)(conv)
-    else:
-        for l in range(conv_layers):
-            x = TimeDistributed(Dense(num_hiddens, name='fc_{}'.format(l + 1), activation='relu'))(x)  
-
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
-
-    for l in range(gru_layers):
-        x = Bidirectional(GRU(rnn_size, name='fc_{}'.format(l + 1), return_sequences=True, activation='relu', kernel_initializer=initialization),
-                      merge_mode='sum')(x)
-
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
-
-    # Last Layer 5+6 Time Dist Dense Layer & Softmax
-    x = TimeDistributed(Dense(num_hiddens, activation=clipped_relu))(x)
-    x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
-
-    return ctc_model(input_data, x)
-
-
 
 
 
@@ -371,3 +318,57 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
                               kernel_regularizer=l2(weight_decay)))(o)
 
     return ctc_model(x, o)
+
+
+
+def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
+                  conv_layers=1, gru_layers=1, use_conv=True):
+    """ DeepSpeech 2 model.
+    Architecture:
+        Input Spectrogram TIMEx161
+        1 Batch Normalisation layer on input
+        1-3 Convolutional Layers
+        1 Batch Normalisation layer
+        1-7 BiDirectional GRU Layers
+        1 Batch Normalisation layer
+        1 Fully connected Dense
+        1 Softmax output
+    Details:
+       - Uses Spectrogram as input rather than MFCC
+       - Did not use BN on the first input
+       - Network does not dynamically adapt to maximum audio size in the first convolutional layer. Max conv
+          length padded at 2048 chars, otherwise use_conv=False
+    Reference:
+        https://arxiv.org/abs/1512.02595
+    """
+    def clipped_relu(x):
+        return relu(x, max_value=max_value)
+    
+    K.set_learning_phase(1)
+
+    input_data = Input(shape=(None, num_features), name='the_input')
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(input_data)
+
+    if use_conv:
+        conv = ZeroPadding1D(padding=(0, 2048))(x)
+        for l in range(conv_layers):
+            x = Conv1D(filters=num_hiddens, name='conv_{}'.format(l+1), kernel_size=11, padding='valid', activation='relu', strides=2)(conv)
+    else:
+        for l in range(conv_layers):
+            x = TimeDistributed(Dense(num_hiddens, name='fc_{}'.format(l + 1), activation='relu'))(x)  
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    for l in range(gru_layers):
+        x = Bidirectional(GRU(rnn_size, name='fc_{}'.format(l + 1), return_sequences=True, activation='relu', kernel_initializer=initialization),
+                      merge_mode='sum')(x)
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    # Last Layer 5+6 Time Dist Dense Layer & Softmax
+    x = TimeDistributed(Dense(num_hiddens, activation=clipped_relu))(x)
+    x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
+
+    return ctc_model(input_data, x)
+
+
