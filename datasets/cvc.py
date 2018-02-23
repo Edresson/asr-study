@@ -91,7 +91,7 @@ class CVC(DatasetParser):
 
         #common voice valid test
         test_label = os.path.join(self.dataset_dir,'cv-valid-test.csv')
-        dataset_type = 'test'
+        dataset_type = 'valid'
         for line in codecs.open(test_label, 'r', encoding='utf8'):
 
             try:
@@ -126,7 +126,7 @@ class CVC(DatasetParser):
         #common voice other test
 
         test_label = os.path.join(self.dataset_dir,'cv-other-test.csv')
-        dataset_type = 'valid'
+        dataset_type = 'test'
 
 
         for line in codecs.open(test_label, 'r', encoding='utf8'):
