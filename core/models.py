@@ -253,7 +253,7 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
 
 def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
                   conv_layers=1, gru_layers=1, use_conv=True):
-    """ DeepSpeech 2 implementation
+    """ DeepSpeech 2 model.
     Architecture:
         Input Spectrogram TIMEx161
         1 Batch Normalisation layer on input

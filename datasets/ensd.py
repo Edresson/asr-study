@@ -10,9 +10,9 @@ from utils.generic_utils import get_from_module
 class ENSD(DatasetParser):
     """ English Speech dataset reader and parser
 
-    This dataset is a combination of four biggers datasets (voxforge, CommonVoice, LibriSpeech). The dataset was divided in the following
+    This dataset is a combination of four biggers datasets (voxforge, CommonVoice, LibriSpeech,VCTK-Corpus,TED-LIUM2,Tatoeba). The dataset was divided in the following
     way:
-        * Train: voxforge,CommonVoice,LibriSpeech
+        * Train: voxforge,CommonVoice,LibriSpeech,VCTK-Corpus,TED-LIUM2,Tatoeba
         * Valid: Common Voice valid test( cv-valid-test )
         * Test: Common Voice valid test( cv-other-test )
 
