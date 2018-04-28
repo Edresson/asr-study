@@ -23,7 +23,7 @@ class CVC(DatasetParser):
         dataset_type = 'train'
 
         for line in codecs.open(train_label, 'r', encoding='utf8'):
-            try:
+                #try:
 
 
 
@@ -50,8 +50,8 @@ class CVC(DatasetParser):
                        'label': label,
                        'audio_file': audio_name,
                        'dataset': dataset_type}
-            except :
-                self._logger.error('Skipping Line: %s'% line)
+                #except :
+                #self._logger.error('Skipping Line: %s'% line)
 
 
         #common voice other train

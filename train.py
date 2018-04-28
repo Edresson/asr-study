@@ -214,9 +214,8 @@ if __name__ == '__main__':
     logger.info('Initialzing training...')
 
 
-    #NOTE:  As per the keras 2 documentation the parameter steps_per_epoch = no of train samples/batch_size and validation_steps = no of validation samples/batch_size
-    steps_per_epoch = train_flow.len#/args.batch_size
-    validation_steps = num_val_samples#/args.batch_size
+    steps_per_epoch = train_flow.len
+    validation_steps = num_val_samples
     
 
         

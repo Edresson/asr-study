@@ -233,9 +233,9 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
 
     # Fourth layer
     o = Bidirectional(SimpleRNN(num_hiddens, return_sequences=True,
-                                dropout_W=dropout,
+                                dropout=dropout,
                                 activation=clipped_relu,
-                                init='he_normal'), merge_mode='sum')(o)
+                                kernel_initializer='he_normal'), merge_mode='sum')(o)
     o = TimeDistributed(Dropout(dropout))(o)
 
     # Fifth layer
@@ -371,4 +371,49 @@ def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, 
 
     return ctc_model(input_data, x)
 
+def qrnn_deep_speech(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
+           dropout=0.2, zoneout=0., input_dropout=False,
+           input_std_noise=.0, weight_decay=1e-4, residual=None,
+           layer_norm=None, mi=None, activation='tanh'):
+    """ qrnn_deep_speech
 
+    """
+
+    x = Input(name='inputs', shape=(None, num_features))
+    o = x
+
+    if input_std_noise is not None:
+        o = GaussianNoise(input_std_noise)(o)
+
+    if residual is not None:
+        o = TimeDistributed(Dense(num_hiddens*2,
+                                  kernel_regularizer=l2(weight_decay)))(o)
+
+    if input_dropout:
+        o = Dropout(dropout)(o)
+
+    for i, _ in enumerate(range(num_layers)):
+        #ToDo: change  LSTM for Qrnn, Qrnn is based in convolutional neural network.
+        
+        new_o = Bidirectional(LSTM(num_hiddens,
+                                   return_sequences=True,
+                                   kernel_regularizer=l2(weight_decay),
+                                   recurrent_regularizer=l2(weight_decay),
+                                   dropout=dropout,
+                                   recurrent_dropout=dropout,
+                                   zoneout_c=zoneout,
+                                   zoneout_h=zoneout,
+                                   mi=mi,
+                                   layer_norm=layer_norm,
+                                   activation=activation))(o)
+
+
+        if residual is not None:
+            o = merge([new_o,  o], mode=residual)
+        else:
+            o = new_o
+
+    o = TimeDistributed(Dense(num_classes,
+                              kernel_regularizer=l2(weight_decay)))(o)
+
+    return ctc_model(x, o)
