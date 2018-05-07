@@ -28,7 +28,6 @@ class CVC(DatasetParser):
                 
                 #print(line)
                 split = line.strip().split(',')
-                print(split)
                 if split == ['']:
                     continue
                 #Ignore first line csv arquive.
