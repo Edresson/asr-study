@@ -737,7 +737,7 @@ class LSTM(keras_layers.LSTM):
             self.mi_beta2 = self.add_weight(
                 shape=(4 * self.units, ),
                 initializer=k_init(beta2_init),
-                name='{}_mi_beta2'.format(self.name))
+                name='{}_mi_beta2'.format(self.name))"""
 
         if self.layer_norm is not None:
             ln_gain_init, ln_bias_init = self.layer_norm
@@ -754,7 +754,7 @@ class LSTM(keras_layers.LSTM):
                     initializer=k_init(ln_bias_init),
                     name='%s_ln_bias_%s' % (self.name, n))
 
-                self.layer_norm_params[n] = [gain, bias]"""
+                self.layer_norm_params[n] = [gain, bias]
 
     def _layer_norm(self, x, param_name):
         if self.layer_norm is None:

@@ -26,7 +26,7 @@ class CVC(DatasetParser):
                 #try:
 
                 
-                #print(line)
+                
                 split = line.strip().split(',')
                 if split == ['']:
                     continue
@@ -34,7 +34,7 @@ class CVC(DatasetParser):
                 if split[0] == 'filename' :
                     continue
 
-                
+                print(split[0])
                 audio_file = os.path.join(self.dataset_dir,split[0])
                 
                 audio_name = (split[0].split('/'))[1]
