@@ -25,17 +25,20 @@ class CVC(DatasetParser):
         for line in codecs.open(train_label, 'r', encoding='utf8'):
                 #try:
 
-
-
+                
+                #print(line)
                 split = line.strip().split(',')
-
+                print(split)
+                if split == ['']:
+                    continue
                 #Ignore first line csv arquive.
-                if split[0] == 'filename':
+                if split[0] == 'filename' :
                     continue
 
+                
                 audio_file = os.path.join(self.dataset_dir,split[0])
                 
-                audio_name = split[0].split('/')[1]
+                audio_name = (split[0].split('/'))[1]
 
 
                 label = split[1].lower()
