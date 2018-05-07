@@ -53,7 +53,7 @@ except:
     from keras.regularizers import l1, l2
 
 from core.layers import recurrent
-from core.layers import LSTM
+from core.layers import LSTM,QRNN
 
 
 def ctc_model(inputs, output, **kwargs):
@@ -395,16 +395,10 @@ def qrnn_deep_speech(num_features=39, num_classes=28, num_hiddens=256, num_layer
     for i, _ in enumerate(range(num_layers)):
         #ToDo: change  LSTM for Qrnn, Qrnn is based in convolutional neural network.
         
-        new_o = Bidirectional(LSTM(num_hiddens,
+        new_o = Bidirectional(QRNN(num_hiddens,
                                    return_sequences=True,
                                    kernel_regularizer=l2(weight_decay),
-                                   recurrent_regularizer=l2(weight_decay),
                                    dropout=dropout,
-                                   recurrent_dropout=dropout,
-                                   zoneout_c=zoneout,
-                                   zoneout_h=zoneout,
-                                   mi=mi,
-                                   layer_norm=layer_norm,
                                    activation=activation))(o)
 
 
