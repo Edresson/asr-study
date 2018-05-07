@@ -34,7 +34,7 @@ class CVC(DatasetParser):
                     continue
 
                 audio_file = os.path.join(self.dataset_dir,split[0])
-                print(line)
+                
                 audio_name = split[0].split('/')[1]
 
 
