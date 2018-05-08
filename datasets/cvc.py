@@ -76,6 +76,8 @@ class CVC(DatasetParser):
 
 
                 label = split[1].lower()
+                if label == '':
+                    continue
 
                 try:
                     duration = librosa.audio.get_duration(filename=audio_file)
