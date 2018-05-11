@@ -23,7 +23,7 @@ from tensorflow.python.keras import layers as keras_layers
 try:
     from tensorflow.python.keras.layers import RNN as Recurrent
 except:
-    from tensorflow.python.keras._impl.keras.layers.recurrent import RNN as Recurrent
+    from tensorflow.python.keras._impl.keras.layers.recurrent import Recurrent as Recurrent
 
 from tensorflow.python.keras.layers import Layer, InputSpec
 
