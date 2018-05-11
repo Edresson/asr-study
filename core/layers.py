@@ -18,7 +18,7 @@ except:
 from tensorflow.python.keras import activations, regularizers
 
 from tensorflow.python.keras import layers as keras_layers
-from tensorflow.python.keras.layers.recurrent import RNN as Recurrent
+from tensorflow.python.keras.layers import RNN as Recurrent
 from tensorflow.python.keras.engine import Layer, InputSpec
 
 from core.layers_utils import highway_bias_initializer
