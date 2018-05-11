@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import tensorflow.python.keras.backend as K
+from tensorflow.python.keras import backend as K
 import tensorflow as tf
 from keras import activations, regularizers
 
