@@ -32,7 +32,8 @@ from tensorflow.python.keras._impl.keras.layers.merge import add  # , # concaten
 from tensorflow.python.keras import layers as keras_layers
 
 
-from tensorflow.python.keras.layers.recurrent import SimpleRNN
+from tensorflow.python.keras.layers import SimpleRNN
+
 from tensorflow.python.keras.layers import Dense, Activation, Bidirectional, Reshape,Flatten, Lambda, Input,\
     Masking, Convolution1D, BatchNormalization, GRU, Conv1D, RepeatVector, Conv2D
 from tensorflow.python.keras.optimizers import SGD, adam
