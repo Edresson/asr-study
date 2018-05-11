@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from tensorflow.python.keras import backend as K
 import tensorflow as tf
-from keras import activations, regularizers
+from tensorflow.python.keras import activations, regularizers
 
 #compatibility keras update
 try: 
