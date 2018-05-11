@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from keras.preprocessing.image import Iterator
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.python.keras.preprocessing.image import Iterator
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
 import scipy
 import librosa
