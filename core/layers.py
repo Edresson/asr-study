@@ -39,8 +39,8 @@ from tensorflow.python.keras._impl.keras.utils.conv_utils import conv_output_len
 
 
 
-import theano
-import theano.tensor as T
+#import theano
+#import theano.tensor as T
 
 
 def _dropout(x, level, noise_shape=None, seed=None):
