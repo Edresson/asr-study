@@ -20,7 +20,14 @@ from tensorflow.python.keras.layers import Masking
 from tensorflow.python.keras.layers import Bidirectional
 from tensorflow.python.keras.layers import Lambda
 from tensorflow.python.keras.layers import Dropout
-from tensorflow.python.keras.layers import merge
+
+
+
+from tensorflow.python.keras._impl.keras.layers import merge
+from tensorflow.python.keras._impl.keras.layers.merge import add  # , # concatenate BAD FOR COREML
+
+
+
 
 from tensorflow.python.keras import layers as keras_layers
 
@@ -31,8 +38,9 @@ from tensorflow.python.keras.layers import Dense, Activation, Bidirectional, Res
 from tensorflow.python.keras.optimizers import SGD, adam
 from tensorflow.python.keras.layers import ZeroPadding1D, Convolution1D, ZeroPadding2D, Convolution2D, MaxPooling2D, GlobalMaxPooling2D
 from tensorflow.python.keras.layers import TimeDistributed, Dropout
-from tensorflow.python.keras.layers.merge import add  # , # concatenate BAD FOR COREML
-from tensorflow.python.keras.utils.conv_utils import conv_output_length
+
+from tensorflow.python.keras._impl.keras.utils.conv_utils import conv_output_length
+
 from tensorflow.python.keras.activations import relu
 
 
