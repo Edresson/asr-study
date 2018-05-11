@@ -1,4 +1,4 @@
-import keras.callbacks as callbacks
+import tensorflow.python.keras.callbacks as callbacks
 
 import h5py
 import numpy as np

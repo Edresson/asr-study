@@ -3,22 +3,23 @@ from __future__ import absolute_import
 import numpy as np
 
 
-import keras.backend as K
+
+from tensorflow.python.keras import backend as K
 import tensorflow as tf
 
 # compatibility keras update
 try:
-    from keras import initializers
+    from tensorflow.python.keras import initializers
 
     initializations = initializers
 except:
-    from keras import initializations
+    from tensorflow.python.keras import initializations
 
-from keras import activations, regularizers
+from tensorflow.python.keras import activations, regularizers
 
-import keras.layers as keras_layers
-from keras.layers.recurrent import Recurrent
-from keras.engine import Layer, InputSpec
+from tensorflow.python.keras import layers as keras_layers
+from tensorflow.python.keras.layers.recurrent import Recurrent
+from tensorflow.python.keras.engine import Layer, InputSpec
 
 from core.layers_utils import highway_bias_initializer
 from core.layers_utils import layer_normalization
@@ -30,11 +31,11 @@ from core.initializers import k_init
 
 import logging
 
-from keras import backend as K
-from keras import activations, initializers, regularizers, constraints
-from keras.layers import Layer, InputSpec
+from tensorflow.python.keras import backend as K
+from tensorflow.python.keras import activations, initializers, regularizers, constraints
+from tensorflow.python.keras.layers import Layer, InputSpec
 
-from keras.utils.conv_utils import conv_output_length
+from tensorflow.python.keras.utils.conv_utils import conv_output_length
 
 import theano
 import theano.tensor as T
@@ -869,7 +870,7 @@ def recurrent(units, model='keras_lstm', activation='tanh',
 
 
 if __name__ == "__main__":
-    from keras.models import Sequential
+    from tensorflow.python.keras.models import Sequential
     #from keras.utils.visualize_util import plot
 
     model = Sequential()

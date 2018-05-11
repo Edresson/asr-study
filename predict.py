@@ -15,6 +15,9 @@ from utils import generic_utils as utils
 from preprocessing import audio, text
 
 
+
+
+  
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Evaluating an ASR system.')
@@ -142,6 +145,7 @@ if __name__ == '__main__':
     else:
         with codecs.open(args.save, 'w', encoding='utf8') as f:
             json.dump(results, f)
-
-    from keras import backend as K
+            
+from tensorflow.python.keras import backend
+  
     K.clear_session()

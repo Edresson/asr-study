@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import keras.backend as K
+import tensorflow.python.keras.backend as K
 import tensorflow as tf
 from keras import activations, regularizers
 
 #compatibility keras update
 try: 
-    from keras import initializers
+    from tensorflow.python.keras import initializers
     initializations = initializers
 except:
-    from keras import initializations
+    from tensorflow.python.keras import initializations
     
 
-from keras.layers import GRU, SimpleRNN
-from keras.layers import LSTM as keras_LSTM
+from tensorflow.python.keras.layers import GRU, SimpleRNN
+from tensorflow.python.keras.layers import LSTM as keras_LSTM
 
 
 def highway_bias_initializer(shape, name=None):

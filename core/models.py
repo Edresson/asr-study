@@ -16,41 +16,41 @@ except:
 
 
 
-from keras.activations import relu
+from tensorflow.python.keras.activations import relu
 
-from keras.models import Model  as Model
+from tensorflow.python.keras.models import Model  as Model
 
-from keras.layers import Input
-from keras.layers import GaussianNoise
-from keras.layers import TimeDistributed
-from keras.layers import Dense
-from keras.layers import Masking
-from keras.layers import Bidirectional
-from keras.layers import Lambda
-from keras.layers import Dropout
-from keras.layers import merge
+from tensorflow.python.keras.layers import Input
+from tensorflow.python.keras.layers import GaussianNoise
+from tensorflow.python.keras.layers import TimeDistributed
+from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Masking
+from tensorflow.python.keras.layers import Bidirectional
+from tensorflow.python.keras.layers import Lambda
+from tensorflow.python.keras.layers import Dropout
+from tensorflow.python.keras.layers import merge
 
-import keras.layers as keras_layers
+import tensorflow.python.keras.layers as keras_layers
 
 
-from keras.layers.recurrent import SimpleRNN
-from keras.layers import Dense, Activation, Bidirectional, Reshape,Flatten, Lambda, Input,\
+from tensorflow.python.keras.layers.recurrent import SimpleRNN
+from tensorflow.python.keras.layers import Dense, Activation, Bidirectional, Reshape,Flatten, Lambda, Input,\
     Masking, Convolution1D, BatchNormalization, GRU, Conv1D, RepeatVector, Conv2D
-from keras.optimizers import SGD, adam
-from keras.layers import ZeroPadding1D, Convolution1D, ZeroPadding2D, Convolution2D, MaxPooling2D, GlobalMaxPooling2D
-from keras.layers import TimeDistributed, Dropout
-from keras.layers.merge import add  # , # concatenate BAD FOR COREML
-from keras.utils.conv_utils import conv_output_length
-from keras.activations import relu
+from tensorflow.python.keras.optimizers import SGD, adam
+from tensorflow.python.keras.layers import ZeroPadding1D, Convolution1D, ZeroPadding2D, Convolution2D, MaxPooling2D, GlobalMaxPooling2D
+from tensorflow.python.keras.layers import TimeDistributed, Dropout
+from tensorflow.python.keras.layers.merge import add  # , # concatenate BAD FOR COREML
+from tensorflow.python.keras.utils.conv_utils import conv_output_length
+from tensorflow.python.keras.activations import relu
 
 
 
 
 #compatibility keras update
 try:
-    from keras.regularizers import l1, l2, l1l2
+    from tensorflow.python.keras.regularizers import l1, l2, l1l2
 except:
-    from keras.regularizers import l1, l2
+    from tensorflow.python.keras.regularizers import l1, l2
 
 from core.layers import recurrent
 from core.layers import LSTM,QRNN

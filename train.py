@@ -22,11 +22,11 @@ except ImportError:
     logging.warning('warpctc binding for tensorflow not found. :(')
 import tensorflow as tf
 
-import keras
+from tensorflow import keras
 
-import keras.backend as K
-from keras.optimizers import SGD, Adam
-from keras.callbacks import ReduceLROnPlateau
+from  tensorflow.python.keras import backend as K
+from tensorflow.python.keras.optimizers import SGD, Adam
+from tensorflow.python.keras.callbacks import ReduceLROnPlateau
 
 from core import metrics
 from core.ctc_utils import ctc_dummy_loss, decoder_dummy_loss
