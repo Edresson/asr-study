@@ -8,14 +8,6 @@ from utils.hparams import HParams
 from tensorflow.python  import keras 
 from tensorflow.python.keras import backend as K
 
-#compatibility keras update
-try: 
-    from tensorflow.python.keras.initializers import uniform
-except:
-    from tensorflow.python.keras.initializations import uniform
-
-
-
 from tensorflow.python.keras.activations import relu
 
 from tensorflow.python.keras.models import Model  as Model
