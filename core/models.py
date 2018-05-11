@@ -36,7 +36,7 @@ from tensorflow.python.keras.layers import SimpleRNN
 
 from tensorflow.python.keras.layers import Dense, Activation, Bidirectional, Reshape,Flatten, Lambda, Input,\
     Masking, Convolution1D, BatchNormalization, GRU, Conv1D, RepeatVector, Conv2D
-from tensorflow.python.keras.optimizers import SGD, adam
+from tensorflow.python.keras.optimizers import SGD, Adam
 from tensorflow.python.keras.layers import ZeroPadding1D, Convolution1D, ZeroPadding2D, Convolution2D, MaxPooling2D, GlobalMaxPooling2D
 from tensorflow.python.keras.layers import TimeDistributed, Dropout
 
