@@ -14,8 +14,6 @@ import datetime
 import inspect
 import codecs
 
-from keras import backend as K
-K.tensorflow_backend._get_available_gpus()
 
 import logging
 try:
