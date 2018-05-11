@@ -19,7 +19,7 @@ from tensorflow.python.keras import activations, regularizers
 
 from tensorflow.python.keras import layers as keras_layers
 from tensorflow.python.keras.layers import RNN as Recurrent
-from tensorflow.python.keras.engine import Layer, InputSpec
+from tensorflow.python.keras import Layer, InputSpec
 
 from core.layers_utils import highway_bias_initializer
 from core.layers_utils import layer_normalization
