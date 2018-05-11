@@ -5,14 +5,14 @@ from __future__ import print_function
 import core.ctc_utils as ctc_utils
 from utils.hparams import HParams
 
-import keras
-import keras.backend as K
+from tensorflow.python  import keras 
+from tensorflow.python.keras import backend as K
 
 #compatibility keras update
 try: 
-    from keras.initializers import uniform
+    from tensorflow.python.keras.initializers import uniform
 except:
-    from keras.initializations import uniform
+    from tensorflow.python.keras.initializations import uniform
 
 
 
@@ -30,7 +30,7 @@ from tensorflow.python.keras.layers import Lambda
 from tensorflow.python.keras.layers import Dropout
 from tensorflow.python.keras.layers import merge
 
-import tensorflow.python.keras.layers as keras_layers
+from tensorflow.python.keras import layers as keras_layers
 
 
 from tensorflow.python.keras.layers.recurrent import SimpleRNN
