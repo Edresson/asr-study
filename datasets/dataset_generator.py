@@ -197,6 +197,7 @@ class DatasetIterator(Iterator):
         else:
             batch_labels = None
 
+    
         return self._make_in_out(batch_inputs, batch_labels, batch_inputs_len)
 
          
@@ -218,23 +219,11 @@ class DatasetIterator(Iterator):
         #Keras 2 support.
         with self.lock:
             
-            index_array, current_index, current_batch_size= next(self.index_generator)
+            index_array= next(self.index_generator)
 
         
-        index_array.sort()
 
-        index_array_list = index_array.tolist()
-
-        batch_inputs, batch_inputs_len = self._make_in(
-            self.inputs[index_array_list], current_batch_size)
-
-        if self.labels is not None:
-            batch_labels = self._make_out(self.labels[index_array_list],
-                                          current_batch_size)
-        else:
-            batch_labels = None
-
-        return self._make_in_out(batch_inputs, batch_labels, batch_inputs_len)
+        return self._get_batches_of_transformed_samples(index_array)
 
 
 
