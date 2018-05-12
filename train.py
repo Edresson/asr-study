@@ -223,8 +223,7 @@ if __name__ == '__main__':
     #print('train_flow ',train_flow[0].next())
     # Fit the model
     #print(next(valid_flow))
-    with tf.device('/gpu:0'):
-        model.fit_generator(train_flow, steps_per_epoch=steps_per_epoch,
+    model.fit_generator(train_flow, steps_per_epoch=steps_per_epoch,
                             epochs=args.num_epochs, validation_data=valid_flow,
                             validation_steps=validation_steps, max_queue_size=10,
                             workers=1, callbacks=callback_list, verbose=1,
