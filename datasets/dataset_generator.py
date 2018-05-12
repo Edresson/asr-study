@@ -219,7 +219,7 @@ class DatasetIterator(Iterator):
         #Keras 2 support.
         with self.lock:
             
-            index_array= next(self.index_generator)
+            index_array,c,b= next(self.index_generator)
 
         
 
