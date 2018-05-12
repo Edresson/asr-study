@@ -182,7 +182,9 @@ class DatasetIterator(Iterator):
 
     def _get_batches_of_transformed_samples(self, index_array):
         print('em get batches',len(index_array))
-        current_batch_size = len(index_array)
+        index_array, current_index, current_batch_size = index_array
+        print('2 em get batches',len(index_array))
+        #current_batch_size = len(index_array)
         
         index_array.sort()
 
@@ -218,7 +220,7 @@ class DatasetIterator(Iterator):
         #Keras 2 support.
         with self.lock:
             
-            index_array, current_index, current_batch_size= next(self.index_generator)
+            index_array, current_index, current_batch_size= next(self.index_generator
 
         print('em next',len(index_array))
         index_array.sort()
