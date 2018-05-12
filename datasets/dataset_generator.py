@@ -196,8 +196,9 @@ class DatasetIterator(Iterator):
                                           current_batch_size)
         else:
             batch_labels = None
-
-        return self._make_in_out(batch_inputs, batch_labels, batch_inputs_len)
+        out = self._make_in_out(batch_inputs, batch_labels, batch_inputs_len)
+        print('out',out)
+        return out
 
          
         
