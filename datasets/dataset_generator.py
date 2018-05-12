@@ -220,7 +220,7 @@ class DatasetIterator(Iterator):
         #Keras 2 support.
         with self.lock:
             
-            index_array, current_index, current_batch_size= next(self.index_generator
+            index_array, current_index, current_batch_size= next(self.index_generator)
 
         print('em next',len(index_array))
         index_array.sort()
