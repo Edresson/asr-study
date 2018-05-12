@@ -181,6 +181,7 @@ class DatasetIterator(Iterator):
         return len(self.inputs)
 
     def _get_batches_of_transformed_samples(self, index_array):
+        print(len(index_array))
         
         index_array, current_index, current_batch_size = index_array
         
