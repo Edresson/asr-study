@@ -15,8 +15,6 @@ from utils import generic_utils as utils
 from preprocessing import audio, text
 
 
-
- 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Evaluating an ASR system.')

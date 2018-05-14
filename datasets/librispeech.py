@@ -10,6 +10,8 @@ import numpy as np
 
 class LibriSpeech(DatasetParser):
     """ LibriSpeech dataset reader and parser
+
+    More about the dataset: http://www.openslr.org/resources/12/
     """
 
     def __init__(self, dataset_dir=None, name='LibriSpeech', **kwargs):
