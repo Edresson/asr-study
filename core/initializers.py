@@ -1,7 +1,6 @@
 import numpy as np
 
-from tensorflow.python.keras import backend as K
-
+import keras.backend as K
 
 
 def k_init(k):

@@ -3,29 +3,22 @@ from __future__ import absolute_import
 import numpy as np
 
 
-
-from tensorflow.python.keras import backend as K
+import keras.backend as K
 import tensorflow as tf
 
 # compatibility keras update
 try:
-    from tensorflow.python.keras import initializers
+    from keras import initializers
 
     initializations = initializers
 except:
-    from tensorflow.python.keras import initializations
+    from keras import initializations
 
-from tensorflow.python.keras import activations, regularizers
+from keras import activations, regularizers
 
-from tensorflow.python.keras import layers as keras_layers
-
-
-try:
-    from tensorflow.python.keras.layers import RNN as Recurrent
-except:
-    from tensorflow.python.keras._impl.keras.layers.recurrent import Recurrent as Recurrent
-
-from tensorflow.python.keras.layers import Layer, InputSpec
+import keras.layers as keras_layers
+from keras.layers.recurrent import Recurrent
+from keras.engine import Layer, InputSpec
 
 from core.layers_utils import highway_bias_initializer
 from core.layers_utils import layer_normalization
@@ -37,16 +30,14 @@ from core.initializers import k_init
 
 import logging
 
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras import activations, initializers, regularizers, constraints
-from tensorflow.python.keras.layers import Layer, InputSpec
+from keras import backend as K
+from keras import activations, initializers, regularizers, constraints
+from keras.layers import Layer, InputSpec
 
-from tensorflow.python.keras._impl.keras.utils.conv_utils import conv_output_length
+from keras.utils.conv_utils import conv_output_length
 
-
-
-#import theano
-#import theano.tensor as T
+import theano
+import theano.tensor as T
 
 
 def _dropout(x, level, noise_shape=None, seed=None):
@@ -878,7 +869,7 @@ def recurrent(units, model='keras_lstm', activation='tanh',
 
 
 if __name__ == "__main__":
-    from tensorflow.python.keras.models import Sequential
+    from keras.models import Sequential
     #from keras.utils.visualize_util import plot
 
     model = Sequential()

@@ -5,12 +5,10 @@ from __future__ import print_function
 import h5py
 import yaml
 
-from tensorflow.python  import keras 
-from tensorflow.python.keras import backend as K
-
-
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Lambda
+import keras
+import keras.backend as K
+from keras.models import Model
+from keras.layers import Lambda
 import tensorflow as tf
 
 import core

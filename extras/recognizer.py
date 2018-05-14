@@ -17,9 +17,9 @@ import utils.generic_utils as utils
 from core.dataset_generator import DatasetIterator
 from utils.core_utils import setup_gpu
 
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.models import Model
-from tensorflow.python.keras.layers import Lambda
+import keras.backend as K
+from keras.models import Model
+from keras.layers import Lambda
 
 import tensorflow as tf
 
