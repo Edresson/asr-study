@@ -118,7 +118,7 @@ class RHN(Recurrent):
         activation: activation function.
             Can be the name of an existing function (str),
             or a Theano function (see: [activations](../activations.md)).
-        recurrent_activation: activation function for the inner cells.
+        inner_activation: activation function for the inner cells.
         coupling: if True, carry gate will be coupled to the transform gate,
             i.e., c = 1 - t
         kernel_regularizer: instance of [WeightRegularizer](../regularizers.md)
@@ -144,7 +144,7 @@ class RHN(Recurrent):
     def __init__(self, units, depth=1,
                  init='glorot_uniform', inner_init='orthogonal',
                  bias_init=highway_bias_initializer,
-                 activation='tanh', recurrent_activation='hard_sigmoid',
+                 activation='tanh', inner_activation='hard_sigmoid',
                  coupling=True, layer_norm=False, ln_gain_init='one',
                  ln_bias_init='zero', mi=False,
                  kernel_regularizer=None, U_regularizer=None,
@@ -155,7 +155,7 @@ class RHN(Recurrent):
         self.inner_init = initializations.get(inner_init)
         self.bias_init = initializations.get(bias_init)
         self.activation = activations.get(activation)
-        self.recurrent_activation = activations.get(recurrent_activation)
+        self.inner_activation = activations.get(inner_activation)
         self.coupling = coupling
         self.has_layer_norm = layer_norm
         self.ln_gain_init = initializations.get(ln_gain_init)
@@ -296,10 +296,10 @@ class RHN(Recurrent):
             # Equation 7
             h = self.activation(a0)
             # Equation 8
-            t = self.recurrent_activation(a1)
+            t = self.inner_activation(a1)
             # Equation 9
             if not self.coupling:
-                c = self.recurrent_activation(a2)
+                c = self.inner_activation(a2)
             else:
                 c = 1 - t  # carry gate was coupled to the transform gate
 
@@ -344,7 +344,7 @@ class RHN(Recurrent):
                   'inner_init': self.inner_init.__name__,
                   'bias_init': self.bias_init.__name__,
                   'activation': self.activation.__name__,
-                  'recurrent_activation': self.recurrent_activation.__name__,
+                  'inner_activation': self.inner_activation.__name__,
                   'coupling': self.coupling,
                   'layer_norm': self.has_layer_norm,
                   'ln_gain_init': self.ln_gain_init.__name__,
@@ -379,6 +379,7 @@ class LSTM(keras_layers.LSTM):
          implementation= 1 :cpu
          implementation = 2 :gpu
          '''
+        units = units
         try:#python3
             super().__init__(units, **kwargs)
         except:#python2
@@ -405,21 +406,21 @@ class LSTM(keras_layers.LSTM):
         except:#python2
             super(LSTM, self).build(input_shape)
 
-        """ ToDo:  reimplement
+
 
         if self.mi is not None:
             alpha_init, beta1_init, beta2_init = self.mi
 
             self.mi_alpha = self.add_weight(
-                shape=(4 * self.units, ),
+                (4 * self.units, ),
                 initializer=k_init(alpha_init),
                 name='{}_mi_alpha'.format(self.name))
             self.mi_beta1 = self.add_weight(
-                shape=(4 * self.units, ),
+                (4 * self.units, ),
                 initializer=k_init(beta1_init),
                 name='{}_mi_beta1'.format(self.name))
             self.mi_beta2 = self.add_weight(
-                shape=(4 * self.units, ),
+                (4 * self.units, ),
                 initializer=k_init(beta2_init),
                 name='{}_mi_beta2'.format(self.name))
 
@@ -430,15 +431,15 @@ class LSTM(keras_layers.LSTM):
             for n, i in {'Uh': 4, 'Wx': 4, 'new_c': 1}.items():
 
                 gain = self.add_weight(
-                    shape=(i*self.units, ),
+                    (i*self.units, ),
                     initializer=k_init(ln_gain_init),
                     name='%s_ln_gain_%s' % (self.name, n))
                 bias = self.add_weight(
-                    shape=(i*self.units, ),
+                    (i*self.units, ),
                     initializer=k_init(ln_bias_init),
                     name='%s_ln_bias_%s' % (self.name, n))
 
-                self.layer_norm_params[n] = [gain, bias]"""
+                self.layer_norm_params[n] = [gain, bias]
 
     def _layer_norm(self, x, param_name):
         if self.layer_norm is None:
@@ -448,10 +449,7 @@ class LSTM(keras_layers.LSTM):
 
         return layer_normalization(x, gain, bias)
 
-    """ToDo:  reimplement
-    def step(self, inputs, states):
-        
-        x = inputs
+    def step(self, x, states):
         
         h_tm1 = states[0]
         c_tm1 = states[1]
@@ -464,8 +462,6 @@ class LSTM(keras_layers.LSTM):
 
         # self.W to self.kernel
         Wx = self._layer_norm(K.dot(x * B_W[0], self.kernel), 'Wx')
-
-        
         
         if self.mi is not None:
             z = self.mi_alpha * Wx * Uh + self.mi_beta1 * Uh + \
@@ -479,10 +475,10 @@ class LSTM(keras_layers.LSTM):
         z_c = z[:, 2 * self.units: 3 * self.units]
         z_o = z[:, 3 * self.units:]
 
-        i = self.recurrent_activation(z_i)
-        f = self.recurrent_activation(z_f)
+        i = self.inner_activation(z_i)
+        f = self.inner_activation(z_f)
         c = f * c_tm1 + i * self.activation(z_c)
-        o = self.recurrent_activation(z_o)
+        o = self.inner_activation(z_o)
 
         if 0 < self.zoneout_c < 1:
             c = zoneout(self.zoneout_c, c_tm1, c,
@@ -510,9 +506,7 @@ class LSTM(keras_layers.LSTM):
         base_config = super(LSTM, self).get_config()
 
 
-        return dict(list(base_config.items()) + list(config.items()))"""
-    
-
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 def recurrent(units, model='keras_lstm', activation='tanh',
@@ -554,9 +548,8 @@ def recurrent(units, model='keras_lstm', activation='tanh',
 
 if __name__ == "__main__":
     from keras.models import Sequential
-    #from keras.utils.visualize_util import plot
+    from keras.utils.visualize_util import plot
 
     model = Sequential()
-    #model.add(RHN(10, input_dim=2, depth=2, layer_norm=True))
-    model.add(LSTM( 128))
+    model.add(RHN(10, input_dim=2, depth=2, layer_norm=True))
     # plot(model)
