@@ -83,7 +83,7 @@ from core.layers import LSTM,QRNN
 
 
 #ctc loss
-import tensorflow.python.keras import backend as K
+from tensorflow.python.keras import backend as K
 from tensorflow.python.keras.layers import Lambda
 
 
