@@ -181,7 +181,7 @@ class DatasetIterator(Iterator):
         return len(self.inputs)
 
     def _get_batches_of_transformed_samples(self, index_array):
-        print('em get batches',len(index_array))
+        #print('em get batches',len(index_array))
         current_batch_size = len(index_array)
         
         index_array.sort()
@@ -197,7 +197,7 @@ class DatasetIterator(Iterator):
         else:
             batch_labels = None
         out = self._make_in_out(batch_inputs, batch_labels, batch_inputs_len)
-        print('out',out)
+        #print('out',out)
         return out
 
          
