@@ -57,7 +57,7 @@ from core.layers import recurrent
 from core.layers import LSTM,QRNN
 
 
-def ctc_model(inputs, output, **kwargs):
+'''def ctc_model(inputs, output, **kwargs):
     """ Given the input and output returns a model appending ctc_loss, the
     decoder, labels, and inputs_length
 
@@ -78,7 +78,50 @@ def ctc_model(inputs, output, **kwargs):
     # Define loss as a layer
     loss = ctc([output, labels, inputs_length])
 
-    return Model(inputs=[inputs, labels, inputs_length], outputs=[loss, y_pred])
+    return Model(inputs=[inputs, labels, inputs_length], outputs=[loss, y_pred])'''
+
+
+
+#ctc loss
+import keras.backend as K
+from keras.layers import Lambda
+
+
+def ctc_lambda_func(args):
+    y_pred, labels, input_length, label_length = args
+
+    # hack for load_model
+    import tensorflow as tf
+
+    ''' from TF: Input requirements
+    1. sequence_length(b) <= time for all b
+    2. max(labels.indices(labels.indices[:, 1] == b, 2)) <= sequence_length(b) for all b.
+    '''
+    return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+
+
+def ctc(y_true, y_pred):
+    return y_pred
+
+
+def ctc_model(input_data,y_pred, **kwargs):
+
+    # labels = K.placeholder(name='the_labels', ndim=1, dtype='int32')
+    labels = Input(name='the_labels', shape=[None,], dtype='int32')
+    input_length = Input(name='input_length', shape=[1], dtype='int32')
+    label_length = Input(name='label_length', shape=[1], dtype='int32')
+
+    # Keras doesn't currently support loss funcs with extra parameters
+    # so CTC loss is implemented in a lambda layer
+    loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred,
+                                                                       labels,
+                                                                       input_length,
+                                                                       label_length])
+
+    model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
+
+    return model
+
 
 
 def graves2006(num_features=26, num_hiddens=100, num_classes=28, std=.6):
