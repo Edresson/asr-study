@@ -83,8 +83,8 @@ from core.layers import LSTM,QRNN
 
 
 #ctc loss
-import keras.backend as K
-from keras.layers import Lambda
+import tensorflow.python.keras.backend as K
+from tensorflow.python.keras.layers import Lambda
 
 
 def ctc_lambda_func(args):
