@@ -109,6 +109,7 @@ class DatasetParser(object):
         feat_name = str(input_parser)
 
         data = self._to_ld(label_parser=label_parser)
+
         if len(data) == 0:
             raise IndexError("Data is empty")
 
