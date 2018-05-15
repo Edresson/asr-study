@@ -91,6 +91,26 @@ python train.py --dataset .datasets/ensd/data.h5 --model graves2006
 
 
 
+### Deep Speech2
+
+This model is trained using  Mel Spectrogram (LogFilterBank), using 116 filts  calculated on 20ms windows.
+
+You must preprocess the dataset in an hdf5 file by using the following parameters :
+
+For Brazilian Portuguese Speech Dataset(BRSD) Click [here](datasets.md) for more information:
+```
+python -m extras.make_dataset --parser brsd  --input_parser logfbank --input_parser_params "win_len 0.02 num_filt 161" --override
+
+```
+
+For English Speech Dataset (ENSD) Click [here](docs/datasets.md) for more information.
+```
+python -m extras.make_dataset --parser ensd  --input_parser logfbank --input_parser_params "win_len 0.02 num_filt 161" --override
+
+
+```
+
+
 
 
 

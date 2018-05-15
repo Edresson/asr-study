@@ -98,8 +98,8 @@ if __name__ == '__main__':
         show_metrics=['loss', 'decoder_ler', 'val_loss', 'val_decoder_ler'])'''
 
     # GPU configuration
-    setup_gpu(args.gpu, args.allow_growth,
-              log_device_placement=args.verbose > 1)
+    '''setup_gpu(args.gpu, args.allow_growth,
+              log_device_placement=args.verbose > 1)'''
 
     # Initial configuration
     epoch_offset = 0
