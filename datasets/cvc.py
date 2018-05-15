@@ -23,18 +23,21 @@ class CVC(DatasetParser):
         dataset_type = 'train'
 
         for line in codecs.open(train_label, 'r', encoding='utf8'):
-            try:
+                #try:
 
-
-
+                
+                
                 split = line.strip().split(',')
-
+                if split == ['']:
+                    continue
                 #Ignore first line csv arquive.
-                if split[0] == 'filename':
+                if split[0] == 'filename' :
                     continue
 
+                print(split[0])
                 audio_file = os.path.join(self.dataset_dir,split[0])
-                audio_name = split[0].split('/')[1]
+                
+                audio_name = (split[0].split('/'))[1]
 
 
                 label = split[1].lower()
@@ -50,8 +53,8 @@ class CVC(DatasetParser):
                        'label': label,
                        'audio_file': audio_name,
                        'dataset': dataset_type}
-            except :
-                self._logger.error('Skipping Line: %s'% line)
+                #except :
+                #self._logger.error('Skipping Line: %s'% line)
 
 
         #common voice other train
@@ -73,6 +76,8 @@ class CVC(DatasetParser):
 
 
                 label = split[1].lower()
+                if label == '':
+                    continue
 
                 try:
                     duration = librosa.audio.get_duration(filename=audio_file)
@@ -91,7 +96,7 @@ class CVC(DatasetParser):
 
         #common voice valid test
         test_label = os.path.join(self.dataset_dir,'cv-valid-test.csv')
-        dataset_type = 'test'
+        dataset_type = 'valid'
         for line in codecs.open(test_label, 'r', encoding='utf8'):
 
             try:
@@ -126,7 +131,7 @@ class CVC(DatasetParser):
         #common voice other test
 
         test_label = os.path.join(self.dataset_dir,'cv-other-test.csv')
-        dataset_type = 'valid'
+        dataset_type = 'test'
 
 
         for line in codecs.open(test_label, 'r', encoding='utf8'):

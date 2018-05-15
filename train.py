@@ -14,6 +14,7 @@ import datetime
 import inspect
 import codecs
 
+
 import logging
 try:
     import warpctc_tensorflow
@@ -214,21 +215,20 @@ if __name__ == '__main__':
     logger.info('Initialzing training...')
 
 
-    #NOTE:  As per the keras 2 documentation the parameter steps_per_epoch = no of train samples/batch_size and validation_steps = no of validation samples/batch_size
-    steps_per_epoch = train_flow.len#/args.batch_size
-    validation_steps = num_val_samples#/args.batch_size
+    steps_per_epoch = train_flow.len
+    validation_steps = num_val_samples
     
 
         
     #print('train_flow ',train_flow[0].next())
     # Fit the model
     #print(next(valid_flow))
-    
-    model.fit_generator(train_flow, steps_per_epoch=steps_per_epoch,
-                        epochs=args.num_epochs, validation_data=valid_flow,
-                        validation_steps=validation_steps, max_queue_size=10,
-                        workers=1, callbacks=callback_list, verbose=1,
-                        initial_epoch=epoch_offset)
+    with tf.device('/gpu:0'):
+        model.fit_generator(train_flow, steps_per_epoch=steps_per_epoch,
+                            epochs=args.num_epochs, validation_data=valid_flow,
+                            validation_steps=validation_steps, max_queue_size=10,
+                            workers=1, callbacks=callback_list, verbose=1,
+                            initial_epoch=epoch_offset)
     
     if test_flow:
         del model
