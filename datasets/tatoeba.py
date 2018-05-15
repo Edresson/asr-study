@@ -6,7 +6,7 @@ import codecs
 
 
 class Tatoeba(DatasetParser):
-    """ Tatoeba corpus  dataset reader and parser
+    """ Common Voice corpus v1  dataset reader and parser
 
     More about the dataset: https://voice.mozilla.org/data
     """

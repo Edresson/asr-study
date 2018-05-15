@@ -53,7 +53,7 @@ except:
     from keras.regularizers import l1, l2
 
 from core.layers import recurrent
-from core.layers import LSTM,QRNN
+from core.layers import LSTM
 
 
 def ctc_model(inputs, output, **kwargs):
@@ -233,9 +233,9 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
 
     # Fourth layer
     o = Bidirectional(SimpleRNN(num_hiddens, return_sequences=True,
-                                dropout=dropout,
+                                dropout_W=dropout,
                                 activation=clipped_relu,
-                                kernel_initializer='he_normal'), merge_mode='sum')(o)
+                                init='he_normal'), merge_mode='sum')(o)
     o = TimeDistributed(Dropout(dropout))(o)
 
     # Fifth layer
@@ -247,6 +247,59 @@ def deep_speech(num_features=81, num_classes=29, num_hiddens=2048, dropout=0.1,
     o = TimeDistributed(Dense(num_classes))(o)
 
     return ctc_model(x, o)
+
+
+#ToDo: Implement in preprocessing/audio.py Spectrogram support.
+
+def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
+                  conv_layers=1, gru_layers=1, use_conv=True):
+    """ DeepSpeech 2 implementation
+    Architecture:
+        Input Spectrogram TIMEx161
+        1 Batch Normalisation layer on input
+        1-3 Convolutional Layers
+        1 Batch Normalisation layer
+        1-7 BiDirectional GRU Layers
+        1 Batch Normalisation layer
+        1 Fully connected Dense
+        1 Softmax output
+    Details:
+       - Uses Spectrogram as input rather than MFCC
+       - Did not use BN on the first input
+       - Network does not dynamically adapt to maximum audio size in the first convolutional layer. Max conv
+          length padded at 2048 chars, otherwise use_conv=False
+    Reference:
+        https://arxiv.org/abs/1512.02595
+    """
+    def clipped_relu(x):
+        return relu(x, max_value=max_value)
+    
+    K.set_learning_phase(1)
+
+    input_data = Input(shape=(None, num_features), name='the_input')
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(input_data)
+
+    if use_conv:
+        conv = ZeroPadding1D(padding=(0, 2048))(x)
+        for l in range(conv_layers):
+            x = Conv1D(filters=num_hiddens, name='conv_{}'.format(l+1), kernel_size=11, padding='valid', activation='relu', strides=2)(conv)
+    else:
+        for l in range(conv_layers):
+            x = TimeDistributed(Dense(num_hiddens, name='fc_{}'.format(l + 1), activation='relu'))(x)  
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    for l in range(gru_layers):
+        x = Bidirectional(GRU(rnn_size, name='fc_{}'.format(l + 1), return_sequences=True, activation='relu', kernel_initializer=initialization),
+                      merge_mode='sum')(x)
+
+    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
+
+    # Last Layer 5+6 Time Dist Dense Layer & Softmax
+    x = TimeDistributed(Dense(num_hiddens, activation=clipped_relu))(x)
+    x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
+
+    return ctc_model(input_data, x)
 
 
 
@@ -306,99 +359,6 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
                                    zoneout_h=zoneout,
                                    mi=mi,
                                    layer_norm=layer_norm,
-                                   activation=activation))(o)
-
-
-        if residual is not None:
-            o = merge([new_o,  o], mode=residual)
-        else:
-            o = new_o
-
-    o = TimeDistributed(Dense(num_classes,
-                              kernel_regularizer=l2(weight_decay)))(o)
-
-    return ctc_model(x, o)
-
-
-
-def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
-                  conv_layers=1, gru_layers=1, use_conv=True):
-    """ DeepSpeech 2 model.
-    Architecture:
-        Input Spectrogram TIMEx161
-        1 Batch Normalisation layer on input
-        1-3 Convolutional Layers
-        1 Batch Normalisation layer
-        1-7 BiDirectional GRU Layers
-        1 Batch Normalisation layer
-        1 Fully connected Dense
-        1 Softmax output
-    Details:
-       - Uses Spectrogram as input rather than MFCC
-       - Did not use BN on the first input
-       - Network does not dynamically adapt to maximum audio size in the first convolutional layer. Max conv
-          length padded at 2048 chars, otherwise use_conv=False
-    Reference:
-        https://arxiv.org/abs/1512.02595
-    """
-    def clipped_relu(x):
-        return relu(x, max_value=max_value)
-    
-    K.set_learning_phase(1)
-
-    input_data = Input(shape=(None, num_features), name='the_input')
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(input_data)
-
-    if use_conv:
-        conv = ZeroPadding1D(padding=(0, 2048))(x)
-        for l in range(conv_layers):
-            x = Conv1D(filters=num_hiddens, name='conv_{}'.format(l+1), kernel_size=11, padding='valid', activation='relu', strides=2)(conv)
-    else:
-        for l in range(conv_layers):
-            x = TimeDistributed(Dense(num_hiddens, name='fc_{}'.format(l + 1), activation='relu'))(x)  
-
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
-
-    for l in range(gru_layers):
-        x = Bidirectional(GRU(rnn_size, name='fc_{}'.format(l + 1), return_sequences=True, activation='relu', kernel_initializer=initialization),
-                      merge_mode='sum')(x)
-
-    x = BatchNormalization(axis=-1, momentum=0.99, epsilon=1e-3, center=True, scale=True)(x)
-
-    # Last Layer 5+6 Time Dist Dense Layer & Softmax
-    x = TimeDistributed(Dense(num_hiddens, activation=clipped_relu))(x)
-    x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
-
-    return ctc_model(input_data, x)
-
-def qrnn_deep_speech(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
-           dropout=0.2, zoneout=0., input_dropout=False,
-           input_std_noise=.0, weight_decay=1e-4, residual=None,
-           layer_norm=None, mi=None, activation='tanh'):
-    """ qrnn_deep_speech
-
-    """
-
-    x = Input(name='inputs', shape=(None, num_features))
-    o = x
-
-    if input_std_noise is not None:
-        o = GaussianNoise(input_std_noise)(o)
-
-    if residual is not None:
-        o = TimeDistributed(Dense(num_hiddens*2,
-                                  kernel_regularizer=l2(weight_decay)))(o)
-
-    if input_dropout:
-        o = Dropout(dropout)(o)
-
-    for i, _ in enumerate(range(num_layers)):
-        #ToDo: change  LSTM for Qrnn, Qrnn is based in convolutional neural network.
-        
-        new_o = Bidirectional(QRNN(num_hiddens,
-                                   return_sequences=True,
-                                   kernel_regularizer=l2(weight_decay),
-                                   dropout=dropout,
                                    activation=activation))(o)
 
 
