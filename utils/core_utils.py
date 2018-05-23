@@ -89,8 +89,8 @@ def load_model(model_fname, return_meta=False, mode='train', **kwargs):
 
         y_pred = to_dense_layer(y_pred)
 
-        model = Model(input=[input_, inputs_length],
-                      output=[y_pred])
+        model = Model(inputs=[input_, inputs_length],
+                      outputs=[y_pred])
     elif mode == 'eval':
         dec_layer = model.get_layer('decoder')
 

@@ -215,8 +215,8 @@ if __name__ == '__main__':
     logger.info('Initialzing training...')
 
 
-    steps_per_epoch = train_flow.len
-    validation_steps = num_val_samples
+    steps_per_epoch = train_flow.len/args.batch_size
+    validation_steps = num_val_samples/args.batch_size
     
 
         
@@ -235,7 +235,7 @@ if __name__ == '__main__':
         model = load_model(os.path.join(output_dir, 'best.h5'), mode='eval')
         logger.info('Evaluating best model on test set')
         metrics = model.evaluate_generator(test_flow, test_flow.len,
-                                           max_q_size=10, nb_worker=1)
+                                           max_queue_size=10, workers=1)
 
         msg = 'Total loss: %.4f\n\
 CTC Loss: %.4f\nLER: %.2f%%' % (metrics[0], metrics[1], metrics[3]*100)
