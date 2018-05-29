@@ -148,10 +148,10 @@ if __name__ == '__main__':
     output_dir = args.save
     if output_dir is None:
         output_dir = os.path.join('results',
-                                  '%s_%s' % (args.model,
+                                  '%s-%s' % (args.model,
                                              datetime.datetime.now()))
     if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
+        os.makedirs(output_dir.replace('.','-').replace(':','-'))
 
     logger.info('Adding callbacks')
     # Callbacks
