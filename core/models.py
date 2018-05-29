@@ -53,7 +53,7 @@ except:
     from keras.regularizers import l1, l2
 
 from core.layers import recurrent
-from core.layers import LSTM,QRNN
+from core.layers import QRNN#,LSTM
 
 
 def ctc_model(inputs, output, **kwargs):
@@ -258,14 +258,6 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
            layer_norm=None, mi=None, activation='tanh'):
     """ BRSM v1.0
     Improved features:
-        * Residual connection
-        * Variational Dropout
-        * Zoneout
-        * Layer Normalization
-        * Multiplicative Integration
-    Note:
-        Dropout, zoneout and weight decay is tied through layers, in order to
-        minimizing the number of hyper parameters
     Reference:
         [1] Gal, Y, "A Theoretically Grounded Application of Dropout in
         Recurrent Neural Networks", 2015.
@@ -296,16 +288,12 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
         o = Dropout(dropout)(o)
 
     for i, _ in enumerate(range(num_layers)):
-        new_o = Bidirectional(LSTM(num_hiddens,
+        new_o = Bidirectional(keras_layers.LSTM(num_hiddens,
                                    return_sequences=True,
                                    kernel_regularizer=l2(weight_decay),
                                    recurrent_regularizer=l2(weight_decay),
                                    dropout=dropout,
                                    recurrent_dropout=dropout,
-                                   zoneout_c=zoneout,
-                                   zoneout_h=zoneout,
-                                   mi=mi,
-                                   layer_norm=layer_norm,
                                    activation=activation))(o)
 
 
@@ -318,7 +306,6 @@ def brsmv1(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
                               kernel_regularizer=l2(weight_decay)))(o)
 
     return ctc_model(x, o)
-
 
 
 def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, num_classes=29, initialization='glorot_uniform',
@@ -370,6 +357,8 @@ def deep_speech2(num_features=161, num_hiddens=1024, rnn_size=512,max_value=30, 
     x = TimeDistributed(Dense(num_classes, name="output", activation="softmax"))(x)
 
     return ctc_model(input_data, x)
+
+
 
 def qrnn_deep_speech(num_features=39, num_classes=28, num_hiddens=256, num_layers=5,
            dropout=0.2, zoneout=0., input_dropout=False,

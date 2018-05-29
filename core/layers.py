@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import numpy as np
 
 
-import keras.backend as K
 import tensorflow as tf
 
 # compatibility keras update
@@ -346,72 +345,170 @@ class QRNN(Layer):
         return dict(list(base_config.items()) + list(config.items()))
     
 
+
+
+class LayerNormalizationLSTM(keras_layers.LSTM):
+    def build(self, input_shape):
+        if isinstance(input_shape, list):
+            input_shape = input_shape[0]
+        batch_size = input_shape[0] if self.stateful else None
+        self.input_dim = input_shape[2]
+        self.input_spec = InputSpec(shape=(batch_size, None, self.input_dim))
+        self.state_spec = [InputSpec(shape=(batch_size, self.units)),
+                           InputSpec(shape=(batch_size, self.units))]
+
+
+        # initial states: 2 all-zero tensors of shape (units)
+        self.states = [None, None]
+        if self.stateful:
+            self.reset_states()
+
+        self.kernel = self.add_weight(shape=(self.input_dim, 4 * self.units),
+                                 initializer=self.kernel_initializer,
+                                 name='kernel',
+                                 regularizer=self.kernel_regularizer,
+                                 constraint=self.kernel_constraint)
+        self.recurrent_kernel = self.add_weight(shape=(self.units, self.units * 4),
+                                name='recurrent_kernel',
+                                initializer=self.recurrent_initializer,
+                                regularizer=self.recurrent_regularizer,
+                                constraint=self.recurrent_constraint)
+
+        self.gamma_1 = self.add_weight(shape=(4 * self.units,),
+                                       initializer='one',
+                                       name='gamma_1')
+        self.beta_1 = self.add_weight(shape=(4 * self.units,),
+                                      initializer='zero',
+                                      name='beta_1')
+        self.gamma_2 = self.add_weight(shape=(4 * self.units,),
+                                       initializer='one',
+                                       name='gamma_2')
+        self.beta_2 = self.add_weight(shape=(4 * self.units,),
+                                      initializer='zero',
+                                      name='beta_2')
+        self.gamma_3 = self.add_weight(shape=(self.units,),
+                                       initializer='one',
+                                       name='gamma_3')
+        self.beta_3 = self.add_weight((self.units,),
+                                       initializer='zero',
+                                       name='beta_3')
+
+        if self.use_bias:
+            if self.unit_forget_bias:
+                def bias_initializer(shape, *args, **kwargs):
+                    return K.concatenate([
+                        self.bias_initializer((self.units,), *args, **kwargs),
+                        initializers.Ones()((self.units,), *args, **kwargs),
+                        self.bias_initializer((self.units * 2,), *args, **kwargs),
+                    ])
+            else:
+                bias_initializer = self.bias_initializer
+            self.bias = self.add_weight(shape=(self.units * 4,),
+                                        name='bias',
+                                        initializer=bias_initializer,
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
+        else:
+            self.bias = None
+        self.built = True
+
+    def preprocess_input(self, inputs, training=None):
+        return inputs 
+
+    def step(self, x, states):
+        h_tm1 = states[0]
+        c_tm1 = states[1]
+        B_U = states[2]
+        B_W = states[3]
+
+        z = LN(K.dot(x * B_W[0], self.kernel), self.gamma_1, self.beta_1) +  \
+            LN(K.dot(h_tm1 * B_U[0], self.recurrent_kernel), self.gamma_2, self.beta_2)
+        if self.use_bias:
+            z = K.bias_add(z, self.bias)
+
+        z0 = z[:, :self.units]
+        z1 = z[:, self.units: 2 * self.units]
+        z2 = z[:, 2 * self.units: 3 * self.units]
+        z3 = z[:, 3 * self.units:]
+
+        i = self.recurrent_activation(z0)
+        f = self.recurrent_activation(z1)
+        c = f * c_tm1 + i * self.activation(z2)
+        o = self.recurrent_activation(z3)
+
+        h = o * self.activation(LN(c, self.gamma_3, self.beta_3))
+return h, [h, c]
+
+def to_list(x):
+    if type(x) not in [list, tuple]:
+        return [x]
+    else:
+        return list(x)
+
+
+def LN(x, gamma, beta, epsilon=1e-6, axis=-1):
+    m = K.mean(x, axis=axis, keepdims=True)
+    std = K.sqrt(K.var(x, axis=axis, keepdims=True) + epsilon)
+    x_normed = (x - m) / (std + epsilon)
+    x_normed = gamma * x_normed + beta
+
+    return x_normed
+
+
 class LayerNormalization(Layer):
     '''Normalize from all of the summed inputs to the neurons in a layer on
     a single training case. Unlike batch normalization, layer normalization
     performs exactly the same computation at training and tests time.
 
-    # Arguments
-        epsilon: small float > 0. Fuzz parameter
-        num_var: how many tensor are condensed in the input
-        weights: Initialization weights.
-            List of 2 Numpy arrays, with shapes:
-            `[(input_shape,), (input_shape,)]`
-            Note that the order of this list is [gain, bias]
-        gain_init: name of initialization function for gain parameter
-            (see [initializations](../initializations.md)), or alternatively,
-            Theano/TensorFlow function to use for weights initialization.
-            This parameter is only relevant if you don't pass a `weights`
-            argument.
-        bias_init: name of initialization function for bias parameter
-            (see [initializations](../initializations.md)), or alternatively,
-            Theano/TensorFlow function to use for weights initialization.
-            This parameter is only relevant if you don't pass a `weights`
-            argument.
-    # Input shape
-
-    # Output shape
-        Same shape as input.
-
     # References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     '''
-    def __init__(self, epsilon=1e-5, weights=None, gain_init='one',
-                 bias_init='zero', **kwargs):
-        self.epsilon = epsilon
-        self.gain_init = initializations.get(gain_init)
-        self.bias_init = initializations.get(bias_init)
-        self.initial_weights = weights
-        self._logger = logging.getLogger('%s.%s' % (__name__,
-                                                    self.__class__.__name__))
-
+    def __init__(self, axis=-1,
+                 gamma_init='one', beta_init='zero',
+                 gamma_regularizer=None, beta_regularizer=None,
+                 epsilon=1e-6, **kwargs): 
         super(LayerNormalization, self).__init__(**kwargs)
+
+        self.axis = to_list(axis)
+        self.gamma_init = initializers.get(gamma_init)
+        self.beta_init = initializers.get(beta_init)
+        self.gamma_regularizer = regularizers.get(gamma_regularizer)
+        self.beta_regularizer = regularizers.get(beta_regularizer)
+        self.epsilon = epsilon
+
+        self.supports_masking = True
 
     def build(self, input_shape):
         self.input_spec = [InputSpec(shape=input_shape)]
-        shape = (input_shape[-1],)
-
-        self.g = self.gain_init(shape, name='{}_gain'.format(self.name))
-        self.b = self.bias_init(shape, name='{}_bias'.format(self.name))
-
-        self.trainable_weights = [self.g, self.b]
-
-        if self.initial_weights is not None:
-            self.set_weights(self.initial_weights)
-            del self.initial_weights
-
+        shape = [1 for _ in input_shape]
+        for i in self.axis:
+            shape[i] = input_shape[i]
+        self.gamma = self.add_weight(shape=shape,
+                                     initializer=self.gamma_init,
+                                     regularizer=self.gamma_regularizer,
+                                     name='gamma')
+        self.beta = self.add_weight(shape=shape,
+                                    initializer=self.beta_init,
+                                    regularizer=self.beta_regularizer,
+                                    name='beta')
         self.built = True
 
-    def call(self, x, mask=None):
-        return LN(x, self.g, self.b, epsilon=self.epsilon)
+    def call(self, inputs, mask=None):
+        return LN(inputs, gamma=self.gamma, beta=self.beta, 
+                  axis=self.axis, epsilon=self.epsilon)
 
     def get_config(self):
-        config = {"epsilon": self.epsilon,
-                  'num_var': self.num_var,
-                  'gain_init': self.gain_init.__name__,
-                  'bias_init': self.bias_init.__name__}
+        config = {'epsilon': self.epsilon,
+                  'axis': self.axis,
+                  'gamma_init': initializers.serialize(self.gamma_init),
+                  'beta_init': initializers.serialize(self.beta_init),
+                  'gamma_regularizer': regularizers.serialize(self.gamma_regularizer),
+                  'beta_regularizer': regularizers.serialize(self.gamma_regularizer)}
         base_config = super(LayerNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+
 
 
 class RHN(Recurrent):
@@ -678,160 +775,12 @@ class RHN(Recurrent):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class LSTM(keras_layers.LSTM):
-    """
-    # Arguments
 
-        ln: None, list of float or list of list of floats. Determines whether will apply LN or not. If list of floats, the same init will be applied to every LN; otherwise will be individual
-        mi: list of floats or None. If list of floats, the multiplicative integration will be active and initialized with these values.
-        zoneout_h: float between 0 and 1. Fraction of the hidden/output units to maintain their previous values.
-        zoneout_c: float between 0 and 1. Fraction of the cell units to maintain their previous values.
-    # References
-        - [Zoneout: Regularizing RNNs by Randomly Preserving Hidden Activations](https://arxiv.org/abs/1606.01305)
-    """
-    def __init__(self, units, zoneout_h=0., zoneout_c=0.,implementation = 2 ,
-                 layer_norm=None, mi=None, **kwargs):
-        '''implementation Argument is consume_less in Keras 1 values:
-         implementation= 1 :cpu
-         implementation = 2 :gpu
-         '''
-        try:#python3
-            super().__init__(units, **kwargs)
-        except:#python2
-            super(LSTM, self).__init__(units, **kwargs)
-
-        self._logger = logging.getLogger('%s.%s' % (__name__,
-                                                    self.__class__.__name__))
-        
-        self.layer_norm = layer_norm
-        self.mi = mi
-
-        self.zoneout_c = zoneout_c
-        self.zoneout_h = zoneout_h
-         
-
-        if self.zoneout_h or self.zoneout_c:
-            self.uses_learning_phase = True
-            
-
-    def build(self, input_shape):
-        
-        try:#python3
-            super().build(input_shape)
-        except:#python2
-            super(LSTM, self).build(input_shape)
-
-        """ ToDo:  reimplement
-
-        if self.mi is not None:
-            alpha_init, beta1_init, beta2_init = self.mi
-
-            self.mi_alpha = self.add_weight(
-                shape=(4 * self.units, ),
-                initializer=k_init(alpha_init),
-                name='{}_mi_alpha'.format(self.name))
-            self.mi_beta1 = self.add_weight(
-                shape=(4 * self.units, ),
-                initializer=k_init(beta1_init),
-                name='{}_mi_beta1'.format(self.name))
-            self.mi_beta2 = self.add_weight(
-                shape=(4 * self.units, ),
-                initializer=k_init(beta2_init),
-                name='{}_mi_beta2'.format(self.name))
-
-        if self.layer_norm is not None:
-            ln_gain_init, ln_bias_init = self.layer_norm
-
-            self.layer_norm_params = {}
-            for n, i in {'Uh': 4, 'Wx': 4, 'new_c': 1}.items():
-
-                gain = self.add_weight(
-                    shape=(i*self.units, ),
-                    initializer=k_init(ln_gain_init),
-                    name='%s_ln_gain_%s' % (self.name, n))
-                bias = self.add_weight(
-                    shape=(i*self.units, ),
-                    initializer=k_init(ln_bias_init),
-                    name='%s_ln_bias_%s' % (self.name, n))
-
-                self.layer_norm_params[n] = [gain, bias]
-
-    def _layer_norm(self, x, param_name):
-        if self.layer_norm is None:
-            return x
-
-        gain, bias = self.layer_norm_params[param_name]
-
-        return layer_normalization(x, gain, bias)"""
-
-    """ToDo:  reimplement
-    def step(self, inputs, states):
-        
-        x = inputs
-        
-        h_tm1 = states[0]
-        c_tm1 = states[1]
-        B_U = states[2]
-        B_W = states[3]
-        
-        # self.U to self.recurrent_kernel
-            
-        Uh = self._layer_norm(K.dot(h_tm1 * B_U[0], self.recurrent_kernel), 'Uh')
-
-        # self.W to self.kernel
-        Wx = self._layer_norm(K.dot(x * B_W[0], self.kernel), 'Wx')
-
-        
-        
-        if self.mi is not None:
-            z = self.mi_alpha * Wx * Uh + self.mi_beta1 * Uh + \
-                self.mi_beta2 * Wx + self.bias
-            
-        else:
-            z = Wx + Uh + self.bias
-
-        z_i = z[:, :self.units]
-        z_f = z[:, self.units: 2 * self.units]
-        z_c = z[:, 2 * self.units: 3 * self.units]
-        z_o = z[:, 3 * self.units:]
-
-        i = self.recurrent_activation(z_i)
-        f = self.recurrent_activation(z_f)
-        c = f * c_tm1 + i * self.activation(z_c)
-        o = self.recurrent_activation(z_o)
-
-        if 0 < self.zoneout_c < 1:
-            c = zoneout(self.zoneout_c, c_tm1, c,
-                        noise_shape=(self.units,))
-
-        # this is returning a lot of nan
-        new_c = self._layer_norm(c, 'new_c')
-
-        h = o * self.activation(new_c)
-        if 0 < self.zoneout_h < 1:
-            h = zoneout(self.zoneout_h, h_tm1, h,
-                        noise_shape=(self.units,))
-
-        return h, [h, c]
-
-    def get_config(self):
-        config = {'layer_norm': self.layer_norm,
-                  'mi': self.mi,
-                  'zoneout_h': self.zoneout_h,
-                  'zoneout_c': self.zoneout_c
-                  }
-
-
-
-        base_config = super(LSTM, self).get_config()
-
-
-        return dict(list(base_config.items()) + list(config.items()))"""
     
 
 
 
-def recurrent(units, model='keras_lstm', activation='tanh',
+'''def recurrent(units, model='keras_lstm', activation='tanh',
               regularizer=None, dropout=0., **kwargs):
     if model == 'rnn':
         return keras_layers.SimpleRNN(units, activation=activation,
@@ -865,7 +814,7 @@ def recurrent(units, model='keras_lstm', activation='tanh',
                     kernel_regularizer=regularizer, U_regularizer=regularizer,
                     dropout_W=dropout, dropout_U=dropout,
                     consume_less='gpu', **kwargs)
-    raise ValueError('model %s was not recognized' % model)
+    raise ValueError('model %s was not recognized' % model)'''
 
 
 if __name__ == "__main__":
