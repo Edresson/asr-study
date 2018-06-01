@@ -437,7 +437,7 @@ class LayerNormalizationLSTM(keras_layers.LSTM):
         o = self.recurrent_activation(z3)
 
         h = o * self.activation(LN(c, self.gamma_3, self.beta_3))
-return h, [h, c]
+        return h, [h, c]
 
 def to_list(x):
     if type(x) not in [list, tuple]:
