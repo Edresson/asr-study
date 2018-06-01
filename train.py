@@ -215,8 +215,8 @@ if __name__ == '__main__':
     logger.info('Initialzing training...')
 
 
-    steps_per_epoch = train_flow.len/args.batch_size
-    validation_steps = num_val_samples/args.batch_size
+    steps_per_epoch = train_flow.len#/args.batch_size
+    validation_steps = num_val_samples#/args.batch_size
     
 
         
