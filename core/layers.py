@@ -779,8 +779,7 @@ class RHN(Recurrent):
     
 
 
-
-'''def recurrent(units, model='keras_lstm', activation='tanh',
+def recurrent(units, model='keras_lstm', activation='tanh',
               regularizer=None, dropout=0., **kwargs):
     if model == 'rnn':
         return keras_layers.SimpleRNN(units, activation=activation,
@@ -814,7 +813,7 @@ class RHN(Recurrent):
                     kernel_regularizer=regularizer, U_regularizer=regularizer,
                     dropout_W=dropout, dropout_U=dropout,
                     consume_less='gpu', **kwargs)
-    raise ValueError('model %s was not recognized' % model)'''
+    raise ValueError('model %s was not recognized' % model)
 
 
 if __name__ == "__main__":
